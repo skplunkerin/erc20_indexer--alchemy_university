@@ -26,9 +26,9 @@ function App() {
   const [hasQueried, setHasQueried] = useState(false);
   const [tokenDataObjects, setTokenDataObjects] = useState([]);
 
-  async function getAddress(address) {
+  async function getAddress() {
     setUserENS('');
-    setUserAddress(address);
+    setErrorMessage('');
     try {
       const resolvedAddress = await alchemy.core.resolveName(address);
       if (resolvedAddress !== undefined) {
@@ -48,7 +48,7 @@ function App() {
   async function getTokenBalance() {
     setIsLoading(true);
     setErrorMessage('');
-    const address = await getAddress(userAddress);
+    const address = await getAddress();
     // TODO: if address isn't an ENS, check if the address has an ENS
     //
     // const ensContractAddress = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
@@ -67,6 +67,10 @@ function App() {
       return;
     }
 
+    // TODO: the error message html keeps triggering even when this is blank
+    // (showing the "something went wrong" with no error, since it's blank);
+    // find a better way to handle errors. [topher]
+    setErrorMessage('');
     setResults(data);
     const tokenDataPromises = [];
     for (let i = 0; i < data.tokenBalances.length; i++) {
@@ -76,6 +80,8 @@ function App() {
       tokenDataPromises.push(tokenData);
     }
 
+    console.log('errorMessage:', errorMessage);
+    console.log('errorMessage != "":', errorMessage != '');
     setTokenDataObjects(await Promise.all(tokenDataPromises));
     setIsLoading(false);
     setHasQueried(true);
